@@ -65,7 +65,9 @@ void PointsFromCurve(const Curve &input_curve, std::vector<Vec2d> *points) {
       AERROR << "Can not handle curve type.";
     }
   }
-  RemoveDuplicates(points);
+  // comment this out so Carla (Roadrunner) maps work
+  // better solution is to remove 'tiny' segments without breaking road graph
+  // RemoveDuplicates(points);
 }
 
 apollo::common::math::Polygon2d ConvertToPolygon2d(const Polygon &polygon) {
@@ -107,7 +109,7 @@ LaneInfo::LaneInfo(const Lane &lane) : lane_(lane) { Init(); }
 
 void LaneInfo::Init() {
   PointsFromCurve(lane_.central_curve(), &points_);
-  CHECK_GE(points_.size(), 2U);
+  CHECK_GE(points_.size(), 2);
   segments_.clear();
   accumulated_s_.clear();
   unit_directions_.clear();
@@ -212,7 +214,7 @@ double LaneInfo::Heading(const double s) const {
 }
 
 double LaneInfo::Curvature(const double s) const {
-  if (points_.size() < 2U) {
+  if (points_.size() < 2) {
     AERROR << "Not enough points to compute curvature.";
     return 0.0;
   }
@@ -550,7 +552,7 @@ void SignalInfo::Init() {
     points.emplace_back(segment.start());
     points.emplace_back(segment.end());
   }
-  CHECK_GT(points.size(), 0U);
+  CHECK_GT(points.size(), 0);
 }
 
 CrosswalkInfo::CrosswalkInfo(const Crosswalk &crosswalk)
@@ -688,7 +690,8 @@ void PNCJunctionInfo::Init() {
   }
 }
 
-RSUInfo::RSUInfo(const RSU &rsu) : _rsu(rsu) {}
+RSUInfo::RSUInfo(const RSU& rsu) : _rsu(rsu) {
+}
 
 }  // namespace hdmap
 }  // namespace apollo
