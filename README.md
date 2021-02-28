@@ -160,7 +160,7 @@ Congratulations! You have successfully built out Apollo without Hardware. If you
 
 * [Apollo 1.0 QuickStart Guide](docs/quickstart/apollo_1_0_quick_start.md)
 
-## Use with carla
+## Use with Carla
 
 * Due to bazel and the use of ZeroMQ messaging library between apollo and carla, theres a need to link the libzmq.a file directly in the apollo usage folder, for that download libzmq.a, which can be found at https://drive.google.com/file/d/1EC2l_H-JRVQLFZfyXi2fKMNf89pHcJZc/view?usp=sharing and place under ./apollo/cyber/tools/cyber_carla/player/ and ./apollo/cyber/tools/cyber_sender/
 
