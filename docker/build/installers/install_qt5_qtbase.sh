@@ -18,7 +18,11 @@
 # Fail on first error.
 set -e
 
-BUILD_TYPE="${1:-download}"
+if [[ "$1" == "build" ]]; then
+    BUILD_TYPE="build"
+else
+    BUILD_TYPE="download"
+fi
 
 CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 . ${CURR_DIR}/installer_base.sh
@@ -31,7 +35,7 @@ QT5_PREFIX="/usr/local/qt5"
 if [[ "${BUILD_TYPE}" == "download" ]]; then
     PKG_NAME="Qt-${VERSION}-linux-arm64.bin.tar.gz"
     CHECKSUM="9361d04678610fe5fddebbbf9bab38d75690d691f3d88f1f2d3eb96a07364945"
-    DOWNLOAD_LINK="https://apollo-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
+    DOWNLOAD_LINK="https://apollo-platform-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
     download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
     tar xzf "${PKG_NAME}" -C /usr/local
     ln -sfnv "Qt-${VERSION}" "${QT5_PREFIX}"
@@ -41,7 +45,6 @@ else
     # 2) https://src.fedoraproject.org/rpms/qt5-qtbase/tree/master
     # 3) https://launchpad.net/ubuntu/+source/qtbase-opensource-src/5.12.8+dfsg-0ubuntu1
     apt_get_update_and_install \
-        libicu-dev \
         libdbus-1-dev \
         libfontconfig1-dev \
         libfreetype6-dev \

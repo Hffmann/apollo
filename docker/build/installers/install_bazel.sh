@@ -24,14 +24,14 @@ CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 TARGET_ARCH=$(uname -m)
 
-BAZEL_VERSION="3.7.1"
+BAZEL_VERSION="3.5.0"
 BUILDTOOLS_VERSION="3.5.0"
 
 if [[ "$TARGET_ARCH" == "x86_64" ]]; then
   # https://docs.bazel.build/versions/master/install-ubuntu.html
   PKG_NAME="bazel_${BAZEL_VERSION}-linux-x86_64.deb"
   DOWNLOAD_LINK="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${PKG_NAME}"
-  SHA256SUM="2c6c68c23618ac3f37c73ba111f79212b33968217e1a293aa9bf5a17cdd3212b"
+  SHA256SUM="08b71237eccc3c313e62976894fc260d9e1c1ecdfa5b14fc7477fce1c36c618c"
   download_if_not_cached $PKG_NAME $SHA256SUM $DOWNLOAD_LINK
 
   apt_get_update_and_install \
@@ -59,7 +59,7 @@ if [[ "$TARGET_ARCH" == "x86_64" ]]; then
 
 elif [[ "$TARGET_ARCH" == "aarch64" ]]; then
   ARM64_BINARY="bazel-${BAZEL_VERSION}-linux-arm64"
-  CHECKSUM="af2b09fc30123af7aee992eba285c61758c343480116ba76d880268e40d081a5"
+  CHECKSUM="0797425b019c6ffb36e9290323d29563db93826d3abfa3cd784a39cb05ed4f61"
   DOWNLOAD_LINK="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${ARM64_BINARY}"
   # https://github.com/bazelbuild/bazel/releases/download/3.5.0/bazel-3.5.0-linux-arm64
   download_if_not_cached "${ARM64_BINARY}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
@@ -71,7 +71,7 @@ elif [[ "$TARGET_ARCH" == "aarch64" ]]; then
 
   PKG_NAME="buildifier-${BUILDTOOLS_VERSION}-linux-arm64"
   CHECKSUM="19d5b358cb099e264086b26091661fd7548df0a2400e47fd98238cfe0a3e67f9"
-  DOWNLOAD_LINK="https://apollo-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
+  DOWNLOAD_LINK="https://apollo-platform-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
   download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
 
   cp -f ${PKG_NAME} "${SYSROOT_DIR}/bin/buildifier"
@@ -86,7 +86,7 @@ fi
 
 # Note(storypku):
 # Used by `apollo.sh config` to determine native cuda compute capability.
-bash ${CURR_DIR}/install_deviceQuery.sh
+bash ${CURR_DIR}/install_device_query.sh
 
 # Clean up cache to reduce layer size.
 apt-get clean && \

@@ -1,27 +1,27 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=apolloauto/apollo:cuda10.2-cudnn7-trt7-devel-18.04-x86_64
 FROM ${BASE_IMAGE}
 
-ARG APOLLO_DIST
+ARG BUILD_STAGE
 ARG GEOLOC
-ARG CLEAN_DEPS
-ARG INSTALL_MODE
 
 LABEL version="1.2"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH /opt/apollo/sysroot/bin:$PATH
-ENV APOLLO_DIST ${APOLLO_DIST}
 
-COPY installers /opt/apollo/installers
+COPY installers /tmp/installers
 COPY rcfiles /opt/apollo/rcfiles
 
-RUN bash /opt/apollo/installers/install_minimal_environment.sh ${GEOLOC}
-RUN bash /opt/apollo/installers/install_cmake.sh
-RUN bash /opt/apollo/installers/install_cyber_deps.sh ${INSTALL_MODE}
-RUN bash /opt/apollo/installers/install_llvm_clang.sh
-RUN bash /opt/apollo/installers/install_qa_tools.sh
-RUN bash /opt/apollo/installers/install_visualizer_deps.sh
-RUN bash /opt/apollo/installers/install_bazel.sh
-RUN bash /opt/apollo/installers/post_install.sh cyber
+# (Deprecated) Pre-downloaded tarballs
+# COPY archive /tmp/archive
+
+RUN bash /tmp/installers/install_minimal_environment.sh ${GEOLOC}
+RUN bash /tmp/installers/install_cmake.sh
+RUN bash /tmp/installers/install_cyber_deps.sh
+RUN bash /tmp/installers/install_llvm_clang.sh
+RUN bash /tmp/installers/install_qa_tools.sh
+RUN bash /tmp/installers/install_visualizer_deps.sh
+RUN bash /tmp/installers/install_bazel.sh
+RUN bash /tmp/installers/post_install.sh ${BUILD_STAGE}
 
 WORKDIR /apollo

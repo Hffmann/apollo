@@ -22,8 +22,8 @@ set -e
 cd "$(dirname "${BASH_SOURCE[0]}")"
 . ./installer_base.sh
 
-apt_get_update_and_install \
-    libunwind8 \
+apt-get -y update && \
+    apt-get -y install \
     libunwind-dev \
     graphviz
 
@@ -48,8 +48,5 @@ ldconfig
 
 ok "Successfully installed gperftools-${VERSION}."
 
-# Clean up
-apt_get_remove \
-    libunwind-dev
-
+# clean up
 rm -rf ${PKG_NAME} "gperftools-gperftools-${VERSION}"

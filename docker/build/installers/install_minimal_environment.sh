@@ -42,20 +42,34 @@ else # aarch64
     fi
 fi
 
+apt-get -y update && \
+    apt-get install -y --no-install-recommends \
+    apt-utils
+
 # Disabled:
 #   apt-file
-apt_get_update_and_install \
-    apt-utils \
+
+apt-get -y update && \
+    apt-get -y install -y --no-install-recommends \
+    build-essential \
+    autoconf \
+    automake \
     bc      \
     curl    \
     file    \
     gawk    \
+    gcc-7   \
+    g++-7   \
+    gdb     \
     git     \
+    libtool \
     less    \
     lsof    \
+    patch   \
+    pkg-config  \
     python3     \
+    python3-dev \
     python3-pip \
-    python3-distutils \
     sed         \
     software-properties-common \
     sudo    \
@@ -67,31 +81,6 @@ apt_get_update_and_install \
 
 if [[ "${ARCH}" == "aarch64" ]]; then
     apt-get -y install kmod
-fi
-
-MY_STAGE=
-if [[ -f /etc/apollo.conf ]]; then
-    MY_STAGE="$(awk -F '=' '/^stage=/ {print $2}' /etc/apollo.conf 2>/dev/null)"
-fi
-
-if [[ "${MY_STAGE}" != "runtime" ]]; then
-    apt_get_update_and_install \
-        build-essential \
-        autoconf    \
-        automake    \
-        gcc-7       \
-        g++-7       \
-        gdb         \
-        libtool     \
-        patch       \
-        pkg-config      \
-        python3-dev     \
-        libexpat1-dev   \
-        linux-libc-dev
-    # Note(storypku):
-    # Set the last two packages to manually installed:
-    #   libexpat1-dev was required by python3-dev
-    #   linux-libc-dev was required by bazel/clang/cuda/...
 fi
 
 ##----------------##

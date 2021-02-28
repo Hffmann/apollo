@@ -24,11 +24,17 @@ CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 TARGET_ARCH="$(uname -m)"
 
+info "Install poco ..."
+bash ${CURR_DIR}/install_poco.sh
+
 apt-get -y update && \
     apt-get -y install \
     ncurses-dev \
     libuuid1 \
     uuid-dev
+
+info "Install gflags & glog..."
+bash ${CURR_DIR}/install_gflags_glog.sh
 
 info "Install protobuf ..."
 bash ${CURR_DIR}/install_protobuf.sh

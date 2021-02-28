@@ -26,10 +26,6 @@ VERSION="3.16.8"
 
 TARGET_ARCH="$(uname -m)"
 
-function symlink() {
-    ln -s ${SYSROOT_DIR}/bin/cmake /usr/local/bin/cmake
-}
-
 if [[ "${TARGET_ARCH}" == "x86_64" ]]; then
     CMAKE_SH="cmake-${VERSION}-Linux-x86_64.sh"
     SHA256SUM="0241a05bee0dcdf60e912057cc86cbedba21b9b0d67ec11bc67ad4834f182a23"
@@ -37,7 +33,6 @@ if [[ "${TARGET_ARCH}" == "x86_64" ]]; then
     download_if_not_cached $CMAKE_SH $SHA256SUM $DOWLOAD_LINK
     chmod a+x ${CMAKE_SH}
     ./${CMAKE_SH} --skip-license --prefix="${SYSROOT_DIR}"
-    symlink
     rm -fr ${CMAKE_SH}
 
 elif [[ "${TARGET_ARCH}" == "aarch64" ]]; then
@@ -45,13 +40,12 @@ elif [[ "${TARGET_ARCH}" == "aarch64" ]]; then
         CHECKSUM="53056707081491123e705db30df6e38685f9661dc593e1790950c4ba399d3490"
         DECOMPRESSED_NAME="cmake-${VERSION}-aarch64-linux-gnu"
         PKG_NAME="${DECOMPRESSED_NAME}.tar.gz"
-        DOWNLOAD_LINK="https://apollo-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
+        DOWNLOAD_LINK="https://apollo-platform-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
         download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
         tar xzf "${PKG_NAME}"
         pushd ${DECOMPRESSED_NAME}
             DEST=${SYSROOT_DIR} bash install.sh
         popd
-        symlink
         rm -rf "${DECOMPRESSED_NAME}" "${PKG_NAME}"
         exit 0
     fi
@@ -74,12 +68,9 @@ elif [[ "${TARGET_ARCH}" == "aarch64" ]]; then
         make -j$(nproc)
         make install
     popd
-    symlink
 
     rm -rf "CMake-${VERSION}" "${PKG_NAME}"
-    if [[ -n "${CLEAN_DEPS}" ]]; then
-        apt_get_remove libssl-dev libcurl4-openssl-dev
-    fi
+    apt_get_remove libssl-dev libcurl4-openssl-dev
 fi
 
 # Clean up cache to reduce layer size.

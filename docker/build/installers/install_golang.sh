@@ -20,41 +20,36 @@
 set -e
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
-
-# shellcheck source=./installer_base.sh
 . ./installer_base.sh
 
-apt_get_update_and_install \
-    flex \
-    bison \
-    graphviz
+VERSION="1.14.4"
+ARCH="$(uname -m)"
+if [[ "${ARCH}" == "x86_64" ]]; then
+    PKG_NAME="go${VERSION}.linux-amd64.tar.gz"
+    CHECKSUM="b518f21f823759ee30faddb1f623810a432499f050c9338777523d9c8551c62c"
+elif [[ "${ARCH}" == "aarch64" ]]; then
+    PKG_NAME="go${VERSION}.linux-arm64.tar.gz"
+    CHECKSUM="05dc46ada4e23a1f58e72349f7c366aae2e9c7a7f1e7653095538bc5bba5e077"
+else
+    error "Unsupported arch: ${ARCH}. Exiting..."
+    exit 1
+fi
+DOWNLOAD_LINK="https://dl.google.com/go/${PKG_NAME}"
 
-# Build doxygen from source to reduce image size
+download_if_not_cached "$PKG_NAME" "$CHECKSUM" "$DOWNLOAD_LINK"
+tar xzf ${PKG_NAME} -C "${PKGS_DIR}"
 
-VERSION="1.8.19"
-PKG_NAME="doxygen-${VERSION}.src.tar.gz"
-CHECKSUM="ac15d111615251ec53d3f0e54ac89c9d707538f488be57184245adef057778d3"
-DOWNLOAD_LINK="http://doxygen.nl/files/${PKG_NAME}"
+GOROOT="${PKGS_DIR}/go"
 
-download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
+MY_TEXT="""
+export GOROOT=${GOROOT}
+if [ -x \"\${GOROOT}/bin/go\" ]; then
+    add_to_path \"\${GOROOT}/bin\"
+fi
+"""
 
-tar xzf "${PKG_NAME}"
-pushd "doxygen-${VERSION}" >/dev/null
-    mkdir build && cd build
-    cmake .. \
-        -DCMAKE_INSTALL_PREFIX="${SYSROOT_DIR}" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=OFF
+echo "${MY_TEXT}" | tee -a "${APOLLO_PROFILE}"
+ok "Successfully installed go ${VERSION} to ${GOROOT}"
 
-    make -j "$(nproc)"
-    make install
-popd
-
-rm -rf "${PKG_NAME}" "doxygen-${VERSION}"
-
-# VERSION="$(echo ${VERSION} | tr '_' '.')"
-ok "Done installing doxygen-${VERSION}"
-
-# Kick the ladder
-apt_get_remove \
-    bison flex
+# clean up.
+rm -fr "${PKG_NAME}"

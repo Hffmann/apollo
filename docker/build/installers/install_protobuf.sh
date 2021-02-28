@@ -22,14 +22,10 @@ set -e
 cd "$(dirname "${BASH_SOURCE[0]}")"
 . ./installer_base.sh
 
-# Notes on Protobuf Installer:
-# 1) protobuf for cpp didn't need to be pre-installed into system
-# 2) protobuf for python should be provided for cyber testcases
-
-VERSION="3.14.0"
+VERSION="3.12.3"
 
 PKG_NAME="protobuf-${VERSION}.tar.gz"
-CHECKSUM="d0f5f605d0d656007ce6c8b5a82df3037e1d8fe8b121ed42e536f569dec16113"
+CHECKSUM="71030a04aedf9f612d2991c1c552317038c3c5a2b578ac4745267a45e7037c29"
 DOWNLOAD_LINK="https://github.com/protocolbuffers/protobuf/archive/v${VERSION}.tar.gz"
 
 #PKG_NAME="protobuf-cpp-${VERSION}.tar.gz"
@@ -46,6 +42,8 @@ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 pushd protobuf-${VERSION}
 mkdir cmake/build && cd cmake/build
 
+# Note(storypku): We install protobuf in /opt/apollo/sysroot to avoid
+# conflicts with the system provided version.
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
     -Dprotobuf_BUILD_TESTS=OFF \

@@ -23,8 +23,8 @@ function ok() {
     (>&2 echo -e "[${GREEN}${BOLD} OK ${NO_COLOR}] $*")
 }
 
+export ARCHIVE_DIR="/tmp/archive"
 export RCFILES_DIR="/opt/apollo/rcfiles"
-export APOLLO_DIST="${APOLLO_DIST:-stable}"
 
 export PKGS_DIR="/opt/apollo/pkgs"
 export SYSROOT_DIR="/opt/apollo/sysroot"
@@ -34,11 +34,8 @@ export APOLLO_LD_FILE="/etc/ld.so.conf.d/apollo.conf"
 export DOWNLOAD_LOG="/opt/apollo/build.log"
 export LOCAL_HTTP_ADDR="http://172.17.0.1:8388"
 
-if [[ "$(uname -m)" == "x86_64" ]]; then
-    export SUPPORTED_NVIDIA_SMS="5.2 6.0 6.1 7.0 7.5 8.0 8.6"
-else # AArch64
-    export SUPPORTED_NVIDIA_SMS="5.3 6.2 7.2"
-fi
+# export SUPPORTED_NVIDIA_SMS="3.7 5.0 5.2 6.0 6.1 7.0 7.2 7.5"
+export SUPPORTED_NVIDIA_SMS="3.7 5.2 6.0 6.1 7.0 7.2 7.5"
 
 function py3_version() {
     local version
@@ -48,7 +45,7 @@ function py3_version() {
 }
 
 function pip3_install() {
-    python3 -m pip install --timeout 30 --no-cache-dir $@
+    python3 -m pip install --no-cache-dir $@
 }
 
 function apt_get_update_and_install() {
@@ -159,13 +156,15 @@ function _checksum_check_pass() {
 }
 
 function download_if_not_cached {
-    local pkg_name="$1"
-    local expected_cs="$2"
-    local url="$3"
+    local pkg_name=$1
+    local expected_cs=$2
+    local url=$3
+    local use_cache=0
 
     echo -e "${pkg_name}\t${expected_cs}\t${url}" >> "${DOWNLOAD_LOG}"
 
     if _local_http_cached "${pkg_name}" ; then
+        use_cache=2
         local local_addr="${LOCAL_HTTP_ADDR}/${pkg_name}"
         info "Local http cache hit ${pkg_name}..."
         wget "${local_addr}" -O "${pkg_name}"
@@ -176,21 +175,43 @@ function download_if_not_cached {
         else
             warning "Found ${pkg_name} in local http cache, but checksum mismatch."
             rm -f "${pkg_name}"
+            use_cache=0
         fi
     fi # end http cache check
+
+    if [[ -e "${ARCHIVE_DIR}/${pkg_name}" ]]; then
+        if _checksum_check_pass "${ARCHIVE_DIR}/${pkg_name}" "${expected_cs}"; then
+            info "package $pkg_name found in fscache, will use it."
+            use_cache=1
+        else
+            warning "package ${pkg_name} found in fscache, but checksum mismatch."
+        fi
+    fi
 
     local my_schema
     my_schema=$(package_schema "$url" "$pkg_name")
 
-    if [[ "$my_schema" == "http" ]]; then
-        info "Start to download $pkg_name from ${url} ..."
-        wget "$url" -O "$pkg_name"
-        ok "Successfully downloaded $pkg_name"
-    elif [[ "$my_schema" == "git" ]]; then
-        info "Clone into git repo $url..."
-        git clone  "${url}" --branch master --recurse-submodules --single-branch
-        ok "Successfully cloned git repo: $url"
+    if [[ $use_cache -eq 0 ]]; then
+        if [[ "$my_schema" == "http" ]]; then
+            info "Start to download $pkg_name from ${url} ..."
+            wget "$url" -O "$pkg_name"
+            ok "Successfully downloaded $pkg_name"
+        elif [[ "$my_schema" == "git" ]]; then
+            info "Clone into git repo $url..."
+            git clone  "${url}" --branch master --recurse-submodules --single-branch
+            ok "Successfully cloned git repo: $url"
+        else
+            error "Unknown schema for package \"$pkg_name\", url=\"$url\""
+        fi
     else
-        error "Unknown schema for package \"$pkg_name\", url=\"$url\""
+        info "Congrats, fs cache hit ${pkg_name}, schema ${my_schema}, will use it."
+        if [ "$my_schema" = "http" ]; then
+            # ln -s "$ARCHIVE_DIR/${pkg_name}" "$pkg_name"
+            mv -f "${ARCHIVE_DIR}/${pkg_name}" "${pkg_name}"
+        elif [ "$my_schema" = "git" ]; then
+            tar xzf "$ARCHIVE_DIR/${pkg_name}"
+        else
+            error "Unknown schema for package \"$pkg_name\", url=\"$url\""
+        fi
     fi
 }

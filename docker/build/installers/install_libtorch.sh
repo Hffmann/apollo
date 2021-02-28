@@ -18,61 +18,52 @@
 
 set -e
 
-CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-. ${CURR_DIR}/installer_base.sh
-
-# TODO(build): Docs on how to build libtorch on Jetson boards
-# References:
-#   https://github.com/ApolloAuto/apollo/blob/pre6/docker/build/installers/install_libtorch.sh
-#   https://github.com/dusty-nv/jetson-containers/blob/master/Dockerfile.pytorch
-#   https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-6-0-now-available
-#   https://github.com/pytorch/pytorch/blob/master/docker/caffe2/ubuntu-16.04-cpu-all-options/Dockerfile
-bash ${CURR_DIR}/install_mkl.sh
+cd "$(dirname "${BASH_SOURCE[0]}")"
+. ./installer_base.sh
 
 TARGET_ARCH="$(uname -m)"
-
-##============================================================##
-# libtorch_cpu
-
-if [[ "${TARGET_ARCH}" == "x86_64" ]]; then
-    # https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.5.0%2Bcpu.zip
-    VERSION="1.7.0-2"
-    CHECKSUM="02fd4f30e97ce8911ef933d0516660892392e95e6768b50f591f4727f6224390"
-elif [[ "${TARGET_ARCH}" == "aarch64" ]]; then
-    VERSION="1.6.0-1"
-    CHECKSUM="6d1fba522e746213c209fbf6275fa6bac68e360bcd11cbd4d3bdbddb657bee82"
-else
-    error "libtorch for ${TARGET_ARCH} not ready. Exiting..."
-    exit 1
+if [ "${TARGET_ARCH}" = "aarch64" ]; then
+    warning "libtorch for aarch64 not ready"
+    exit 0
 fi
 
-PKG_NAME="libtorch_cpu-${VERSION}-linux-${TARGET_ARCH}.tar.gz"
-DOWNLOAD_LINK="https://apollo-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
+# Libtorch-gpu dependency
+pip3_install mkl
+
+# PKG_NAME="libtorch-cxx11-abi-shared-with-deps-1.5.0.zip"
+# DOWNLOAD_LINK="https://download.pytorch.org/libtorch/cu102/${PKG_NAME}"
+# CHECKSUM="0efdd4e709ab11088fa75f0501c19b0e294404231442bab1d1fb953924feb6b5"
+
+PKG_NAME="libtorch-1.5.1-gpu-apollo.zip"
+DOWNLOAD_LINK="https://apollo-platform-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
+CHECKSUM="6e8aa94e2f7086d3ecc79484ade50cdcac69f1b51b1f04e4feda2f9384b4c380"
+
+#https://download.pytorch.org/libtorch/cu102/libtorch-cxx11-abi-shared-with-deps-1.5.0.zip
 download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
+unzip ${PKG_NAME}
 
-tar xzf "${PKG_NAME}"
-mv "${PKG_NAME%.tar.gz}" /usr/local/libtorch_cpu
-rm -f "${PKG_NAME}"
-ok "Successfully installed libtorch_cpu ${VERSION}"
-
-##============================================================##
-# libtorch_gpu
-if [[ "${TARGET_ARCH}" == "x86_64" ]]; then
-    VERSION="1.7.0-2"
-    CHECKSUM="b64977ca4a13ab41599bac8a846e8782c67ded8d562fdf437f0e606cd5a3b588"
-    PKG_NAME="libtorch_gpu-${VERSION}-cu111-linux-x86_64.tar.gz"
-else # AArch64
-    VERSION="1.6.0-1"
-    PKG_NAME="libtorch_gpu-1.6.0-1-linux-aarch64.tar.gz"
-    CHECKSUM="eeb5a223d9dbe40fe96f16e6711c49a3777cea2c0a8da2445d63e117fdad0385"
-fi
-
-DOWNLOAD_LINK="https://apollo-system.cdn.bcebos.com/archive/6.0/${PKG_NAME}"
-download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
-
-tar xzf "${PKG_NAME}"
-mv "${PKG_NAME%.tar.gz}" /usr/local/libtorch_gpu
+pushd libtorch_gpu
+    mkdir -p /usr/local/libtorch_gpu/
+    mv include /usr/local/libtorch_gpu/include
+    mv lib     /usr/local/libtorch_gpu/lib
+    mv share   /usr/local/libtorch_gpu/share
+popd
 
 # Cleanup
-rm -f "${PKG_NAME}"
-ok "Successfully installed libtorch_gpu ${VERSION}"
+rm -rf libtorch_gpu ${PKG_NAME}
+
+PKG_NAME="libtorch-cxx11-abi-shared-with-deps-1.5.0+cpu.zip"
+DOWNLOAD_LINK="https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.5.0%2Bcpu.zip"
+CHECKSUM="3e438237a08099a4bf014335cd0da88708da3a1678aec12a46c67305792b5fa4"
+download_if_not_cached "${PKG_NAME}" "${CHECKSUM}" "${DOWNLOAD_LINK}"
+
+unzip ${PKG_NAME}
+pushd libtorch
+    mkdir -p /usr/local/libtorch_cpu/
+    mv include /usr/local/libtorch_cpu/include
+    mv lib     /usr/local/libtorch_cpu/lib
+    mv share   /usr/local/libtorch_cpu/share
+popd
+
+# Cleanup
+rm -rf libtorch ${PKG_NAME}
