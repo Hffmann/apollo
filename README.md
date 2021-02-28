@@ -35,40 +35,15 @@ Apollo is loaded with new modules and features but needs to be calibrated and co
 
 ## Prerequisites
 
-**[New 2021-01]** The Apollo platform (stable version) is now upgraded with
-software packages and library dependencies of newer versions including:
-
-1. CUDA upgraded to version 11.1 to support Nvidia Ampere (30x0 series) GPUs,
-   with NVIDIA driver >= 455.32
-2. LibTorch (both CPU and GPU version) bumped to version 1.7.0 accordingly.
-
-We do not expect a disruption to your current work, but to ease your life of
-migratation, you would need to: 
-
-1. Update NVIDIA driver on your host to version >= 455.32.
-  ([Web link](https://www.nvidia.com/Download/index.aspx?lang=en-us))
-2. Pull latest code and run the following commands after restarting and
-  logging into Apollo Development container:
-
-```bash
-# Remove Bazel output of previous builds
-rm -rf /apollo/.cache/{bazel,build,repos}
-# Re-configure bazelrc.
-./apollo.sh config --noninteractive
-```
-
----
-
-
 * The vehicle equipped with the by-wire system, including but not limited to brake-by-wire, steering-by-wire, throttle-by-wire and shift-by-wire (Apollo is currently tested on Lincoln MKZ)
 
-* A machine with a 8-core processor and 16GB memory minimum 
+* A machine with a 8-core processor and 16GB memory minimum
 
-* NVIDIA Turing GPU is strongly recommended 
+* NVIDIA Turing GPU is strongly recommended
 
 * Ubuntu 18.04
 
-* NVIDIA driver version 455.32.00 and above ([Web link](https://www.nvidia.com/Download/index.aspx?lang=en-us))
+* NVIDIA driver version 440.33.01 and above ([Web link](https://www.nvidia.com/Download/index.aspx?lang=en-us))
 
 * Docker-CE version 19.03 and above ([Official doc](https://docs.docker.com/engine/install/ubuntu/))
 
@@ -133,7 +108,7 @@ The car now has 360-degree visibility, along with upgraded perception deep learn
 
 [**Apollo 5.5:**](docs/quickstart/apollo_5_5_quick_start.md)
 
-Apollo 5.5 enhances the complex urban road autonomous driving capabilities of previous Apollo releases, by introducing curb-to-curb driving support. With this new addition, Apollo is now a leap closer to fully autonomous urban road driving. The car has complete 360-degree visibility, along with upgraded perception deep learning model and a brand new prediction model to handle the changing conditions of complex road and junction scenarios, making the car more secure and aware. 
+Apollo 5.5 enhances the complex urban road autonomous driving capabilities of previous Apollo releases, by introducing curb-to-curb driving support. With this new addition, Apollo is now a leap closer to fully autonomous urban road driving. The car has complete 360-degree visibility, along with upgraded perception deep learning model and a brand new prediction model to handle the changing conditions of complex road and junction scenarios, making the car more secure and aware.
 
 ![](docs/demo_guide/images/Apollo_5_5_Architecture.png)
 
@@ -184,6 +159,10 @@ Congratulations! You have successfully built out Apollo without Hardware. If you
 * [Apollo 1.5 QuickStart Guide](docs/quickstart/apollo_1_5_quick_start.md)
 
 * [Apollo 1.0 QuickStart Guide](docs/quickstart/apollo_1_0_quick_start.md)
+
+## Use with carla
+
+* Due to bazel and the use of ZeroMQ messaging library between apollo and carla, theres a need to link the libzmq.a file directly in the apollo usage folder, for that download libzmq.a, which can be found at https://drive.google.com/file/d/1EC2l_H-JRVQLFZfyXi2fKMNf89pHcJZc/view?usp=sharing and place under ./apollo/cyber/tools/cyber_carla/player/ and ./apollo/cyber/tools/cyber_sender/
 
 ## Documents
 
