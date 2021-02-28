@@ -36,6 +36,19 @@ function _cyber_recorder_complete() {
   esac
 }
 
+function _cyber_carla_complete() {
+  COMPREPLY=()
+  local word=${COMP_WORDS[COMP_CWORD]}
+  local cmd=${COMP_WORDS[COMP_CWORD-1]}
+  case $cmd in
+  'cyber_carla')
+    COMPREPLY=( $(compgen -W "play info record split recover" -- ${word}) )
+    ;;
+  *)
+    ;;
+  esac
+}
+
 function _cyber_channel_complete() {
   COMPREPLY=()
   local word=${COMP_WORDS[COMP_CWORD]}
@@ -76,6 +89,9 @@ function _cyber_service_complete() {
 }
 complete -F _cyber_launch_complete -o default cyber_launch
 complete -F _cyber_recorder_complete -o default cyber_recorder
+
+complete -F _cyber_carla_complete -o default cyber_carla
+
 complete -F _cyber_channel_complete -o default cyber_channel
 complete -F _cyber_node_complete -o default cyber_node
 complete -F _cyber_service_complete -o default cyber_service
